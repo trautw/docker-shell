@@ -76,7 +76,7 @@ EOM"
   end
 
   desc 'container_start_nodata', "run #{$app_name}"
-  def container_start
+  def container_start_nodata
     run "#{$docker} run --hostname #{$app_name} --interactive=true --tty=true --rm --workdir=/home/#{$user_name} #{$server_image}"
   end
 
