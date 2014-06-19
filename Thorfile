@@ -4,6 +4,7 @@ user_name = ENV['USER']
 $user_name = user_name
 $app_name = "docker-shell"
 $data_container = "#{$app_name}data"
+$data_container_name = "#{user_name}-#{$data_container}"
 $server_image = "#{user_name}/#{$app_name}"
 $data_image = "#{user_name}/#{$data_container}"
 $data_volumes = "/home/#{user_name}"
@@ -39,29 +40,29 @@ RUN chmod 755 /home/#{$user_name}
 
 VOLUME /home/#{$user_name}
 EOM"
-    run "#{$docker} run --name #{$data_container} #{$data_image} /bin/true"
+    run "#{$docker} run --name #{$data_container_name} #{$data_image} /bin/true"
   end
 
   desc 'dataimage_destroy', 'Destructive destroy of data container'
   def dataimage_destroy
-    run "#{$docker} rm #{$data_container}"
+    run "#{$docker} rm #{$data_container_name}"
   end
 
   desc 'dataimage_backup', 'Create tar of data in container'
   def dataimage_backup
-    run "#{$docker} run --rm --volumes-from #{$data_container} busybox tar cf - #{data_volumes} | gzip > $HOME/4backup/#{$data_container}_`date '+%w'`.tz", verbose: false
-    run "#{$docker} run --rm --volumes-from #{$data_container} busybox tar cf - #{$data_volumes} | gzip > $HOME/4backup/#{$data_container}_`date '+%U'`.tz", verbose: false
+    run "#{$docker} run --rm --volumes-from #{$data_container_name} busybox tar cf - #{data_volumes} | gzip > $HOME/4backup/#{$data_container}_`date '+%w'`.tz", verbose: false
+    run "#{$docker} run --rm --volumes-from #{$data_container_name} busybox tar cf - #{$data_volumes} | gzip > $HOME/4backup/#{$data_container}_`date '+%U'`.tz", verbose: false
   end
 
   desc 'dataimage_restore', "Restore data in container from #{$data_container}.tz"
   def dataimage_restore
-    run "zcat #{$data_container}.tz | #{$docker} run -i --rm --workdir / --volumes-from #{$data_container} busybox tar xvf -", verbose: false
-    run "#{$docker} run --rm --volumes-from #{$data_container} busybox chown -R default:default #{$data_volumes}", verbose: false
+    run "zcat #{$data_container}.tz | #{$docker} run -i --rm --workdir / --volumes-from #{$data_container_name} busybox tar xvf -", verbose: false
+    run "#{$docker} run --rm --volumes-from #{$data_container_name} busybox chown -R default:default #{$data_volumes}", verbose: false
   end
 
   desc 'dataimage_shell', 'Shell to data container'
   def dataimage_shell
-    run "#{$docker} run --interactive=true --tty=true --rm --volumes-from #{$data_container} busybox /bin/sh"
+    run "#{$docker} run --interactive=true --tty=true --rm --volumes-from #{$data_container_name} busybox /bin/sh"
   end
 
   # Server
@@ -72,7 +73,7 @@ EOM"
 
   desc 'container_start', "run #{$app_name}"
   def container_start
-    run "#{$docker} run --hostname #{$app_name} --volumes-from #{$data_container} --interactive=true --tty=true --rm --workdir=/home/#{$user_name} #{$server_image}"
+    run "#{$docker} run --hostname #{$app_name} --volumes-from #{$data_container_name} --interactive=true --tty=true --rm --workdir=/home/#{$user_name} #{$server_image}"
   end
 
   desc 'container_start_nodata', "run #{$app_name}"
