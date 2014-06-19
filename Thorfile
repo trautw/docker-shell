@@ -39,7 +39,7 @@ RUN chmod 755 /home/#{$user_name}
 
 VOLUME /home/#{$user_name}
 EOM"
-    run "#{$docker} run --name #{$data_container} #{$data_image} /bin/true"
+    run "#{$docker} run --name #{$data_image} #{$data_image} /bin/true"
   end
 
   desc 'dataimage_destroy', 'Destructive destroy of data container'
