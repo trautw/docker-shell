@@ -8,7 +8,10 @@ $data_container_name = "#{user_name}-#{$data_container}"
 $server_image = "#{user_name}/#{$app_name}"
 $data_image = "#{user_name}/#{$data_container}"
 $data_volumes = "/home/#{user_name}"
-$docker = ". ../env.source; docker"
+$docker = "docker"
+$docker = ". $HOME/.docker.rc; docker" if File.file?("$HOME/.docker.rc")
+$docker = ". #{Dir.pwd}/../docker.rc; docker" if File.file?("#{Dir.pwd}/../docker.rc")
+$docker = ". #{Dir.pwd}/docker.rc; docker" if File.file?("#{Dir.pwd}/docker.rc")
 
 $domain = "docker.szz.chtw.de"
 $env = "dev"
