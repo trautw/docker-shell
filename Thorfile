@@ -29,7 +29,7 @@ class Default < Thor
   end
 
   # Data
-  desc 'dataimage_build', 'Create data container'
+  desc 'dataimage_build', 'Create data image and container'
   def dataimage_build
     run "#{$docker} build -t #{$data_image} - <<EOM
 FROM busybox
@@ -43,24 +43,26 @@ EOM"
     run "#{$docker} run --name #{$data_container_name} #{$data_image} /bin/true"
   end
 
-  desc 'dataimage_destroy', 'Destructive destroy of data container'
+  desc 'datacontainer_destroy', 'Destructive destroy of data container'
   def dataimage_destroy
     run "#{$docker} rm #{$data_container_name}"
   end
 
-  desc 'dataimage_backup', 'Create tar of data in container'
+  desc 'datacontainer_backup', 'Create tar of data in container'
   def dataimage_backup
+    # daily export
     run "#{$docker} run --rm --volumes-from #{$data_container_name} busybox tar cf - #{data_volumes} | gzip > $HOME/4backup/#{$data_container}_`date '+%w'`.tz", verbose: false
+    # weekly export
     run "#{$docker} run --rm --volumes-from #{$data_container_name} busybox tar cf - #{$data_volumes} | gzip > $HOME/4backup/#{$data_container}_`date '+%U'`.tz", verbose: false
   end
 
-  desc 'dataimage_restore', "Restore data in container from #{$data_container}.tz"
+  desc 'datacontainer_restore', "Restore data in container from #{$data_container}.tz"
   def dataimage_restore
     run "zcat #{$data_container}.tz | #{$docker} run -i --rm --workdir / --volumes-from #{$data_container_name} busybox tar xvf -", verbose: false
     run "#{$docker} run --rm --volumes-from #{$data_container_name} busybox chown -R default:default #{$data_volumes}", verbose: false
   end
 
-  desc 'dataimage_shell', 'Shell to data container'
+  desc 'datacontainer_shell', 'Shell to data container'
   def dataimage_shell
     run "#{$docker} run --interactive=true --tty=true --rm --volumes-from #{$data_container_name} busybox /bin/sh"
   end
