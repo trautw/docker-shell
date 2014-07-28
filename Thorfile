@@ -8,10 +8,23 @@ $data_container_name = "#{user_name}-#{$data_container}"
 $server_image = "#{user_name}/#{$app_name}"
 $data_image = "#{user_name}/#{$data_container}"
 $data_volumes = "/home/#{user_name}"
+
+
 $docker = "docker"
-$docker = ". $HOME/.docker.rc; docker" if File.file?("$HOME/.docker.rc")
-$docker = ". #{Dir.pwd}/../docker.rc; docker" if File.file?("#{Dir.pwd}/../docker.rc")
-$docker = ". #{Dir.pwd}/docker.rc; docker" if File.file?("#{Dir.pwd}/docker.rc")
+
+dirname = Dir.pwd
+while true do
+  ["docker.rc",".docker.rc"].each do |configfile|
+    if File.file?("#{dirname}/#{configfile}")
+      $docker_rc = "#{dirname}/#{configfile}"
+      break
+    end
+  end
+  break if dirname == '/'
+  dirname = File.dirname(dirname)
+end
+
+$docker = ". #{$docker_rc}; docker" if $docker_rc
 
 $domain = "docker.szz.chtw.de"
 $env = "dev"
