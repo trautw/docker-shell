@@ -20,7 +20,7 @@ while true do
       break
     end
   end
-  break if dirname == '/'
+  break if $docker_rc || dirname == '/'
   dirname = File.dirname(dirname)
 end
 
